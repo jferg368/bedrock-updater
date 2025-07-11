@@ -1,0 +1,21 @@
+{
+  "name": "bedrock-updater",
+  "version": "1.0.0",
+  "description": "Minecraft Bedrock Server Updater",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "bedrock-updater": "./bin/bedrock-updater.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^19.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

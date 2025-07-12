@@ -13,7 +13,7 @@ A Node.js application that automatically checks for, downloads, and installs upd
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/jferg368/bedrock-updater.git
 cd bedrock-updater
 
 # Install dependencies

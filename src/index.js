@@ -223,17 +223,45 @@ export async function updateMinecraftServer() {
         if (fs.existsSync(`${extractDir}/bedrock_server`)) {
           log("Found bedrock_server executable in the extracted files");
 
-          // Stop the Minecraft service before replacing the executable
+          // Stop the Minecraft service before updating
           log(`Stopping ${config.serviceName}...`);
           await execAndLog(`systemctl stop ${config.serviceName}`);
 
           try {
-            // Replace the existing server executable
-            log(`Replacing ${config.serverPath} with the new version...`);
-            await execAndLog(`cp "${extractDir}/bedrock_server" ${config.serverPath}`);
-            await execAndLog(`chmod +x ${config.serverPath}`);
+            const serverDir = path.dirname(config.serverPath);
+            const backupDir = `/tmp/minecraft_backup_${Date.now()}`;
+            
+            // Backup preserved files/directories
+            log(`Creating backup directory: ${backupDir}`);
+            await execAndLog(`mkdir -p ${backupDir}`);
+            
+            const preservedItems = ['config', 'worlds', 'Dedicated_Server.txt', 'allowlist.json', 'server.properties', 'permissions.json'];
+            for (const item of preservedItems) {
+              const itemPath = `${serverDir}/${item}`;
+              if (fs.existsSync(itemPath)) {
+                log(`Backing up ${item}...`);
+                await execAndLog(`cp -r "${itemPath}" "${backupDir}/"`);
+              }
+            }
 
-            // Start the Minecraft service after replacing the executable
+            // Update server directory with all new files
+            log(`Updating server directory with new files...`);
+            await execAndLog(`cp -r "${extractDir}"/* "${serverDir}/"`);
+            await execAndLog(`chmod +x "${serverDir}/bedrock_server"`);
+
+            // Restore preserved files/directories
+            for (const item of preservedItems) {
+              const backupItemPath = `${backupDir}/${item}`;
+              if (fs.existsSync(backupItemPath)) {
+                log(`Restoring ${item}...`);
+                await execAndLog(`cp -r "${backupItemPath}" "${serverDir}/"`);
+              }
+            }
+
+            // Clean up backup
+            await execAndLog(`rm -rf "${backupDir}"`);
+
+            // Start the Minecraft service
             log(`Starting ${config.serviceName}...`);
             await execAndLog(`systemctl start ${config.serviceName}`);
 
